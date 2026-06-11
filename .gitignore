@@ -1,0 +1,19 @@
+# Dependencies
+/vendor/
+/node_modules/
+
+# Build / local artifacts
+*.log
+*.cache
+/dist/
+/build/
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local env / secrets — never commit Fapshi credentials
+.env
+.env.*
