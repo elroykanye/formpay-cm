@@ -39,9 +39,7 @@ class WPFormsAdapter extends AbstractFormAdapter {
 		add_action( 'wpforms_process_complete', array( $this, 'on_complete' ), 10, 4 );
 	}
 
-	/* ------------------------------------------------------------------ */
-	/* Builder UI                                                          */
-	/* ------------------------------------------------------------------ */
+	// --- Builder UI ---
 
 	public function add_builder_section( $sections, $form_data ) {
 		$sections['formpay_cm'] = __( 'FormPay CM', 'formpay-cm' );
@@ -55,7 +53,10 @@ class WPFormsAdapter extends AbstractFormAdapter {
 		wpforms_panel_field( 'toggle', 'settings', 'formpay_cm_enable', $instance->form_data, __( 'Collect payment for this form', 'formpay-cm' ), array() );
 
 		wpforms_panel_field(
-			'select', 'settings', 'formpay_cm_mode', $instance->form_data,
+			'select',
+			'settings',
+			'formpay_cm_mode',
+			$instance->form_data,
 			__( 'How is the amount decided?', 'formpay-cm' ),
 			array(
 				'default' => PriceRule::MODE_FIXED,
@@ -72,13 +73,19 @@ class WPFormsAdapter extends AbstractFormAdapter {
 		wpforms_panel_field( 'text', 'settings', 'formpay_cm_field', $instance->form_data, __( 'Selector field ID', 'formpay-cm' ), array( 'tooltip' => __( 'The WPForms field ID whose value sets the price.', 'formpay-cm' ) ) );
 
 		wpforms_panel_field(
-			'textarea', 'settings', 'formpay_cm_map', $instance->form_data,
+			'textarea',
+			'settings',
+			'formpay_cm_map',
+			$instance->form_data,
 			__( 'Value → amount table', 'formpay-cm' ),
 			array( 'tooltip' => __( 'One per line: value:amount  e.g.  medicine:75000', 'formpay-cm' ) )
 		);
 
 		wpforms_panel_field(
-			'textarea', 'settings', 'formpay_cm_conditions', $instance->form_data,
+			'textarea',
+			'settings',
+			'formpay_cm_conditions',
+			$instance->form_data,
 			__( 'Conditional rules', 'formpay-cm' ),
 			array( 'tooltip' => __( 'One per line: fieldA=valueA & fieldB=valueB : amount', 'formpay-cm' ) )
 		);
@@ -91,9 +98,7 @@ class WPFormsAdapter extends AbstractFormAdapter {
 		echo '</div>';
 	}
 
-	/* ------------------------------------------------------------------ */
-	/* Submission                                                          */
-	/* ------------------------------------------------------------------ */
+	// --- Submission ---
 
 	/**
 	 * @param array $fields    Processed fields (id => [name,value,...]).
@@ -124,7 +129,13 @@ class WPFormsAdapter extends AbstractFormAdapter {
 		$result = $this->process_with_rule( $form_id, $values, $rule, $context );
 
 		if ( is_wp_error( $result ) ) {
-			Logger::error( 'WPForms payment start failed', array( 'form' => $form_id, 'error' => $result->get_error_message() ) );
+			Logger::error(
+				'WPForms payment start failed',
+				array(
+					'form'  => $form_id,
+					'error' => $result->get_error_message(),
+				)
+			);
 			// Surface to the user via WPForms' confirmation/error channel.
 			add_filter(
 				'wpforms_process_redirect_url',

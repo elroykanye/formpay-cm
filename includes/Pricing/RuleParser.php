@@ -46,7 +46,7 @@ class RuleParser {
 				continue;
 			}
 			list( $cond, $amount ) = array_map( 'trim', explode( ':', $line, 2 ) );
-			$when = array();
+			$when                  = array();
 			foreach ( explode( '&', $cond ) as $pair ) {
 				if ( false === strpos( $pair, '=' ) ) {
 					continue;
@@ -57,7 +57,10 @@ class RuleParser {
 				}
 			}
 			if ( $when ) {
-				$rules[] = array( 'when' => $when, 'amount' => (int) preg_replace( '/\D/', '', $amount ) );
+				$rules[] = array(
+					'when'   => $when,
+					'amount' => (int) preg_replace( '/\D/', '', $amount ),
+				);
 			}
 		}
 		return $rules;

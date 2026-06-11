@@ -24,7 +24,7 @@ class PaymentManager {
 	private $gateway;
 
 	public function __construct( TransactionStore $store = null, GatewayInterface $gateway = null ) {
-		$this->store   = $store ?: new TransactionStore();
+		$this->store   = $store ?? new TransactionStore();
 		$this->gateway = $gateway; // lazy — built from settings when first needed
 	}
 
@@ -71,18 +71,30 @@ class PaymentManager {
 
 		// Already has a live checkout link? Reuse it.
 		if ( ! empty( $txn->payment_link ) && ! empty( $txn->trans_id ) ) {
-			return array( 'transaction' => $txn, 'redirect' => $txn->payment_link );
+			return array(
+				'transaction' => $txn,
+				'redirect'    => $txn->payment_link,
+			);
 		}
 
 		$result = $gateway->initiate( $request );
 		if ( is_wp_error( $result ) ) {
-			Logger::error( 'Payment initiate failed', array( 'external_id' => $request->external_id, 'error' => $result->get_error_message() ) );
+			Logger::error(
+				'Payment initiate failed',
+				array(
+					'external_id' => $request->external_id,
+					'error'       => $result->get_error_message(),
+				)
+			);
 			return $result;
 		}
 
 		$txn = $this->store->attach_provider_ref( $txn->id, $result->trans_id, $result->payment_link );
 
-		return array( 'transaction' => $txn, 'redirect' => $result->payment_link );
+		return array(
+			'transaction' => $txn,
+			'redirect'    => $result->payment_link,
+		);
 	}
 
 	/**
@@ -107,11 +119,14 @@ class PaymentManager {
 		// Defence in depth: confirm the provider amount matches what we expect.
 		if ( null !== $status['amount'] && (int) $status['amount'] !== (int) $txn->amount
 			&& TransactionStatus::SUCCESSFUL === $status['status'] ) {
-			Logger::error( 'Amount mismatch on settlement', array(
-				'trans_id' => $trans_id,
-				'expected' => (int) $txn->amount,
-				'actual'   => (int) $status['amount'],
-			) );
+			Logger::error(
+				'Amount mismatch on settlement',
+				array(
+					'trans_id' => $trans_id,
+					'expected' => (int) $txn->amount,
+					'actual'   => (int) $status['amount'],
+				)
+			);
 			return new \WP_Error( 'formpay_cm_amount_mismatch', __( 'Payment amount mismatch.', 'formpay-cm' ) );
 		}
 

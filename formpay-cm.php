@@ -31,13 +31,13 @@ define( 'FORMPAY_CM_BASENAME', plugin_basename( __FILE__ ) );
  * FormPayCM\Payment\FapshiGateway  ->  includes/Payment/FapshiGateway.php
  */
 spl_autoload_register(
-	function ( $class ) {
+	function ( $class_name ) {
 		$prefix = 'FormPayCM\\';
 		$len    = strlen( $prefix );
-		if ( 0 !== strncmp( $prefix, $class, $len ) ) {
+		if ( 0 !== strncmp( $prefix, $class_name, $len ) ) {
 			return;
 		}
-		$relative = substr( $class, $len );
+		$relative = substr( $class_name, $len );
 		$path     = FORMPAY_CM_DIR . 'includes/' . str_replace( '\\', '/', $relative ) . '.php';
 		if ( is_readable( $path ) ) {
 			require $path;

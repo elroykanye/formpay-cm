@@ -57,8 +57,8 @@ class FapshiGateway implements GatewayInterface {
 		}
 
 		$body = array(
-			'amount'      => (int) $request->amount,       // integer, min 100 XAF
-			'externalId'  => $request->external_id,        // our reconciliation anchor
+			'amount'     => (int) $request->amount,       // integer, min 100 XAF
+			'externalId' => $request->external_id,        // our reconciliation anchor
 		);
 		if ( $request->email ) {
 			$body['email'] = $request->email;
@@ -116,9 +116,7 @@ class FapshiGateway implements GatewayInterface {
 		);
 	}
 
-	/* ------------------------------------------------------------------ */
-	/* HTTP helpers                                                        */
-	/* ------------------------------------------------------------------ */
+	// --- HTTP helpers ---
 
 	private function headers() {
 		return array(
@@ -160,7 +158,13 @@ class FapshiGateway implements GatewayInterface {
 		$response = wp_remote_request( $this->base_url() . $path, $args );
 
 		if ( is_wp_error( $response ) ) {
-			Logger::error( 'Fapshi request transport error', array( 'path' => $path, 'error' => $response->get_error_message() ) );
+			Logger::error(
+				'Fapshi request transport error',
+				array(
+					'path'  => $path,
+					'error' => $response->get_error_message(),
+				)
+			);
 			return $response;
 		}
 
@@ -169,8 +173,22 @@ class FapshiGateway implements GatewayInterface {
 
 		if ( $code < 200 || $code >= 300 ) {
 			$msg = is_array( $json ) && isset( $json['message'] ) ? $json['message'] : __( 'Fapshi request failed.', 'formpay-cm' );
-			Logger::error( 'Fapshi request error', array( 'path' => $path, 'code' => $code, 'body' => $json ) );
-			return new \WP_Error( 'formpay_cm_fapshi_http', $msg, array( 'code' => $code, 'body' => $json ) );
+			Logger::error(
+				'Fapshi request error',
+				array(
+					'path' => $path,
+					'code' => $code,
+					'body' => $json,
+				)
+			);
+			return new \WP_Error(
+				'formpay_cm_fapshi_http',
+				$msg,
+				array(
+					'code' => $code,
+					'body' => $json,
+				)
+			);
 		}
 
 		return is_array( $json ) ? $json : array();

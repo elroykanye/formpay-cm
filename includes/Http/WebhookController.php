@@ -68,13 +68,25 @@ class WebhookController {
 		$trans_id = is_array( $body ) && ! empty( $body['transId'] ) ? sanitize_text_field( $body['transId'] ) : '';
 
 		if ( ! $trans_id ) {
-			return new \WP_REST_Response( array( 'ok' => false, 'reason' => 'no transId' ), 200 );
+			return new \WP_REST_Response(
+				array(
+					'ok'     => false,
+					'reason' => 'no transId',
+				),
+				200
+			);
 		}
 
 		// 2. Don't trust the body — re-query the authoritative status.
 		$result = $this->payments->sync_from_provider( $trans_id );
 		if ( is_wp_error( $result ) ) {
-			Logger::error( 'Webhook sync failed', array( 'transId' => $trans_id, 'error' => $result->get_error_message() ) );
+			Logger::error(
+				'Webhook sync failed',
+				array(
+					'transId' => $trans_id,
+					'error'   => $result->get_error_message(),
+				)
+			);
 		}
 
 		// 3. Always 200 fast — Fapshi delivers each event only once.

@@ -36,9 +36,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class MetFormAdapter extends AbstractFormAdapter {
 
-	const COOKIE       = 'formpay_cm_pay_token';
-	const TRANSIENT    = 'formpay_cm_link_';
-	const TOKEN_TTL    = 1800; // 30 minutes
+	const COOKIE    = 'formpay_cm_pay_token';
+	const TRANSIENT = 'formpay_cm_link_';
+	const TOKEN_TTL = 1800; // 30 minutes
 
 	public function id() {
 		return 'metform';
@@ -77,7 +77,13 @@ class MetFormAdapter extends AbstractFormAdapter {
 		}
 
 		if ( is_wp_error( $result ) ) {
-			Logger::error( 'MetForm payment start failed', array( 'form' => $form_id, 'error' => $result->get_error_message() ) );
+			Logger::error(
+				'MetForm payment start failed',
+				array(
+					'form'  => $form_id,
+					'error' => $result->get_error_message(),
+				)
+			);
 			return;
 		}
 
@@ -106,7 +112,7 @@ class MetFormAdapter extends AbstractFormAdapter {
 		}
 
 		if ( $link ) {
-			wp_redirect( $link ); // phpcs:ignore WordPress.Security.SafeRedirect — external provider URL by design
+			wp_redirect( $link ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- external provider URL by design, cannot be allow-listed
 			exit;
 		}
 

@@ -40,9 +40,7 @@ class FormPayAction extends \ElementorPro\Modules\Forms\Classes\Action_Base {
 		return __( 'FormPay CM (Mobile Money)', 'formpay-cm' );
 	}
 
-	/* ------------------------------------------------------------------ */
-	/* Editor controls                                                     */
-	/* ------------------------------------------------------------------ */
+	// --- Editor controls ---
 
 	public function register_settings_section( $widget ) {
 		$widget->start_controls_section(
@@ -72,11 +70,11 @@ class FormPayAction extends \ElementorPro\Modules\Forms\Classes\Action_Base {
 		$widget->add_control(
 			'formpay_cm_amount',
 			array(
-				'label'      => __( 'Amount (XAF)', 'formpay-cm' ),
-				'type'       => \Elementor\Controls_Manager::NUMBER,
-				'min'        => 100,
-				'default'    => 1000,
-				'condition'  => array( 'formpay_cm_mode' => PriceRule::MODE_FIXED ),
+				'label'     => __( 'Amount (XAF)', 'formpay-cm' ),
+				'type'      => \Elementor\Controls_Manager::NUMBER,
+				'min'       => 100,
+				'default'   => 1000,
+				'condition' => array( 'formpay_cm_mode' => PriceRule::MODE_FIXED ),
 			)
 		);
 
@@ -125,11 +123,43 @@ class FormPayAction extends \ElementorPro\Modules\Forms\Classes\Action_Base {
 
 		// conditional: up to two ANDed fields per rule → amount.
 		$cond_repeater = new \Elementor\Repeater();
-		$cond_repeater->add_control( 'field_a', array( 'label' => __( 'Field A ID', 'formpay-cm' ), 'type' => \Elementor\Controls_Manager::TEXT ) );
-		$cond_repeater->add_control( 'value_a', array( 'label' => __( 'Field A equals', 'formpay-cm' ), 'type' => \Elementor\Controls_Manager::TEXT ) );
-		$cond_repeater->add_control( 'field_b', array( 'label' => __( 'Field B ID (optional)', 'formpay-cm' ), 'type' => \Elementor\Controls_Manager::TEXT ) );
-		$cond_repeater->add_control( 'value_b', array( 'label' => __( 'Field B equals', 'formpay-cm' ), 'type' => \Elementor\Controls_Manager::TEXT ) );
-		$cond_repeater->add_control( 'amount', array( 'label' => __( 'Amount (XAF)', 'formpay-cm' ), 'type' => \Elementor\Controls_Manager::NUMBER, 'min' => 100, 'default' => 1000 ) );
+		$cond_repeater->add_control(
+			'field_a',
+			array(
+				'label' => __( 'Field A ID', 'formpay-cm' ),
+				'type'  => \Elementor\Controls_Manager::TEXT,
+			)
+		);
+		$cond_repeater->add_control(
+			'value_a',
+			array(
+				'label' => __( 'Field A equals', 'formpay-cm' ),
+				'type'  => \Elementor\Controls_Manager::TEXT,
+			)
+		);
+		$cond_repeater->add_control(
+			'field_b',
+			array(
+				'label' => __( 'Field B ID (optional)', 'formpay-cm' ),
+				'type'  => \Elementor\Controls_Manager::TEXT,
+			)
+		);
+		$cond_repeater->add_control(
+			'value_b',
+			array(
+				'label' => __( 'Field B equals', 'formpay-cm' ),
+				'type'  => \Elementor\Controls_Manager::TEXT,
+			)
+		);
+		$cond_repeater->add_control(
+			'amount',
+			array(
+				'label'   => __( 'Amount (XAF)', 'formpay-cm' ),
+				'type'    => \Elementor\Controls_Manager::NUMBER,
+				'min'     => 100,
+				'default' => 1000,
+			)
+		);
 		$widget->add_control(
 			'formpay_cm_conditions',
 			array(
@@ -145,10 +175,10 @@ class FormPayAction extends \ElementorPro\Modules\Forms\Classes\Action_Base {
 		$widget->add_control(
 			'formpay_cm_default',
 			array(
-				'label'       => __( 'Default amount if no match (blank = reject)', 'formpay-cm' ),
-				'type'        => \Elementor\Controls_Manager::NUMBER,
-				'min'         => 100,
-				'condition'   => array(
+				'label'     => __( 'Default amount if no match (blank = reject)', 'formpay-cm' ),
+				'type'      => \Elementor\Controls_Manager::NUMBER,
+				'min'       => 100,
+				'condition' => array(
 					'formpay_cm_mode' => array( PriceRule::MODE_FIELD_MAP, PriceRule::MODE_CONDITIONAL ),
 				),
 			)
@@ -183,9 +213,7 @@ class FormPayAction extends \ElementorPro\Modules\Forms\Classes\Action_Base {
 		$widget->end_controls_section();
 	}
 
-	/* ------------------------------------------------------------------ */
-	/* Submission                                                          */
-	/* ------------------------------------------------------------------ */
+	// --- Submission ---
 
 	/**
 	 * @param \ElementorPro\Modules\Forms\Classes\Form_Record  $record
@@ -258,7 +286,10 @@ class FormPayAction extends \ElementorPro\Modules\Forms\Classes\Action_Base {
 				$when[ $row['field_b'] ] = isset( $row['value_b'] ) ? $row['value_b'] : '';
 			}
 			if ( $when ) {
-				$rules[] = array( 'when' => $when, 'amount' => (int) $row['amount'] );
+				$rules[] = array(
+					'when'   => $when,
+					'amount' => (int) $row['amount'],
+				);
 			}
 		}
 		$data['rules'] = $rules;

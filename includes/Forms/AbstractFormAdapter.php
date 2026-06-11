@@ -30,8 +30,8 @@ abstract class AbstractFormAdapter implements FormAdapterInterface {
 
 	public function __construct( PaymentManager $payments, PriceRuleRepository $rules = null, PriceResolver $resolver = null ) {
 		$this->payments = $payments;
-		$this->rules    = $rules ?: new PriceRuleRepository();
-		$this->resolver = $resolver ?: new PriceResolver();
+		$this->rules    = $rules ?? new PriceRuleRepository();
+		$this->resolver = $resolver ?? new PriceResolver();
 	}
 
 	/**
@@ -58,10 +58,10 @@ abstract class AbstractFormAdapter implements FormAdapterInterface {
 	 * Same pipeline, but with a PriceRule supplied directly (e.g. authored in
 	 * the Elementor editor) rather than loaded from the repository.
 	 *
-	 * @param string         $form_id
-	 * @param array          $fields
+	 * @param string                       $form_id
+	 * @param array                        $fields
 	 * @param \FormPayCM\Pricing\PriceRule $rule
-	 * @param array          $context
+	 * @param array                        $context
 	 * @return array|\WP_Error
 	 */
 	protected function process_with_rule( $form_id, array $fields, $rule, array $context = array() ) {
@@ -126,7 +126,7 @@ abstract class AbstractFormAdapter implements FormAdapterInterface {
 	 * so retries map to the same transaction (idempotency).
 	 */
 	protected function make_external_id( $form_id, $entry_id ) {
-		$entry = $entry_id ?: wp_generate_uuid4();
+		$entry = ! empty( $entry_id ) ? $entry_id : wp_generate_uuid4();
 		return substr( sprintf( '%s-%s-%s', $this->id(), $form_id, $entry ), 0, 100 );
 	}
 

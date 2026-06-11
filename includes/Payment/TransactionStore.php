@@ -136,6 +136,11 @@ class TransactionStore {
 		return $row;
 	}
 
+	// The queries below interpolate $this->table(), which returns
+	// $wpdb->prefix . self::TABLE — a trusted internal identifier. Table names
+	// cannot be bound as prepared parameters, so this interpolation is safe.
+	// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
 	public function find( $id ) {
 		global $wpdb;
 		return $wpdb->get_row(
@@ -176,4 +181,5 @@ class TransactionStore {
 			)
 		);
 	}
+	// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 }

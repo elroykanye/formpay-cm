@@ -37,7 +37,7 @@ class PriceRuleRepository {
 	}
 
 	public function save( $source, $form_id, PriceRule $rule ) {
-		$all = get_option( self::OPTION, array() );
+		$all                                    = get_option( self::OPTION, array() );
 		$all[ $this->key( $source, $form_id ) ] = $rule->to_array();
 		update_option( self::OPTION, $all );
 	}

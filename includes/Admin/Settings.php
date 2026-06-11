@@ -15,9 +15,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Settings {
 
-	const OPTION   = 'formpay_cm_settings';
-	const CAP      = 'manage_options';
-	const PAGE     = 'formpay-cm';
+	const OPTION = 'formpay_cm_settings';
+	const CAP    = 'manage_options';
+	const PAGE   = 'formpay-cm';
 
 	public function register() {
 		add_action( 'admin_menu', array( $this, 'add_menu' ) );
@@ -43,10 +43,10 @@ class Settings {
 	}
 
 	public function sanitize( $input ) {
-		$out                = array();
-		$out['environment'] = ( isset( $input['environment'] ) && 'live' === $input['environment'] ) ? 'live' : 'sandbox';
-		$out['api_user']    = isset( $input['api_user'] ) ? sanitize_text_field( $input['api_user'] ) : '';
-		$out['api_key']     = isset( $input['api_key'] ) ? sanitize_text_field( $input['api_key'] ) : '';
+		$out                   = array();
+		$out['environment']    = ( isset( $input['environment'] ) && 'live' === $input['environment'] ) ? 'live' : 'sandbox';
+		$out['api_user']       = isset( $input['api_user'] ) ? sanitize_text_field( $input['api_user'] ) : '';
+		$out['api_key']        = isset( $input['api_key'] ) ? sanitize_text_field( $input['api_key'] ) : '';
 		$out['webhook_secret'] = isset( $input['webhook_secret'] ) ? sanitize_text_field( $input['webhook_secret'] ) : '';
 		return $out;
 	}

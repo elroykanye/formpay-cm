@@ -29,7 +29,7 @@ class FormPayments {
 	private $repo;
 
 	public function __construct( PriceRuleRepository $repo = null ) {
-		$this->repo = $repo ?: new PriceRuleRepository();
+		$this->repo = $repo ?? new PriceRuleRepository();
 	}
 
 	public function register() {
@@ -49,9 +49,7 @@ class FormPayments {
 		);
 	}
 
-	/* ------------------------------------------------------------------ */
-	/* Save / delete                                                       */
-	/* ------------------------------------------------------------------ */
+	// --- Save / delete ---
 
 	public function handle_save() {
 		if ( ! current_user_can( self::CAP ) ) {
@@ -101,13 +99,19 @@ class FormPayments {
 	}
 
 	private function redirect_back( $notice ) {
-		wp_safe_redirect( add_query_arg( array( 'page' => self::PAGE, 'notice' => $notice ), admin_url( 'options-general.php' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'   => self::PAGE,
+					'notice' => $notice,
+				),
+				admin_url( 'options-general.php' )
+			)
+		);
 		exit;
 	}
 
-	/* ------------------------------------------------------------------ */
-	/* Render                                                              */
-	/* ------------------------------------------------------------------ */
+	// --- Render ---
 
 	public function render() {
 		$all = get_option( PriceRuleRepository::OPTION, array() );
@@ -192,11 +196,15 @@ class FormPayments {
 		echo '<table class="widefat striped"><thead><tr><th>Form</th><th>Mode</th><th>Summary</th><th></th></tr></thead><tbody>';
 		foreach ( $all as $key => $data ) {
 			list( $source, $form_id ) = array_pad( explode( ':', $key, 2 ), 2, '' );
-			$rule    = PriceRule::from_array( (array) $data );
-			$summary = self::MODE_summary( $rule );
-			$del     = wp_nonce_url(
+			$rule                     = PriceRule::from_array( (array) $data );
+			$summary                  = self::mode_summary( $rule );
+			$del                      = wp_nonce_url(
 				add_query_arg(
-					array( 'action' => 'formpay_cm_delete_rule', 'source' => $source, 'form_id' => $form_id ),
+					array(
+						'action'  => 'formpay_cm_delete_rule',
+						'source'  => $source,
+						'form_id' => $form_id,
+					),
 					admin_url( 'admin-post.php' )
 				),
 				'formpay_cm_delete_rule'
@@ -214,7 +222,7 @@ class FormPayments {
 		echo '</tbody></table>';
 	}
 
-	private static function MODE_summary( PriceRule $rule ) {
+	private static function mode_summary( PriceRule $rule ) {
 		switch ( $rule->mode ) {
 			case PriceRule::MODE_FIXED:
 				return sprintf( '%d XAF', $rule->amount );
