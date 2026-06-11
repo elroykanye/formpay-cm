@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<ruleset name="FormPay CM">
+	<description>WordPress coding standards for FormPay CM.</description>
+
+	<!-- What to scan. -->
+	<file>.</file>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/tests/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+	<arg value="ps"/>
+
+	<!-- The WordPress rulesets: correctness, security, i18n, naming.
+	     WordPress-Docs (doc-block completeness) is intentionally omitted — it
+	     is a documentation style guide, not a security/correctness standard. -->
+	<rule ref="WordPress-Core"/>
+	<rule ref="WordPress-Extra"/>
+
+	<!-- We autoload via PSR-4 (StudlyCase.php filenames), so the core
+	     "class-foo.php" file-naming convention does not apply. -->
+	<rule ref="WordPress.Files.FileName">
+		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+	</rule>
+
+	<!-- Enforce our text domain and prefixes (the "laws" reviewers check). -->
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="formpay-cm"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="formpay_cm"/>
+				<element value="FormPayCM"/>
+				<element value="FORMPAY_CM"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Minimum supported versions. -->
+	<config name="minimum_supported_wp_version" value="6.0"/>
+	<config name="testVersion" value="7.4-"/>
+</ruleset>
