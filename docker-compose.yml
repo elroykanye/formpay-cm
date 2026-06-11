@@ -35,6 +35,24 @@ services:
       # Mount this plugin into wp-content/plugins so it appears in the admin.
       - ./:/var/www/html/wp-content/plugins/formpay-cm
 
+  # One-off WP-CLI runner. Doesn't start with `up` (it's behind a profile);
+  # invoke explicitly:  docker compose run --rm wpcli wp <command>
+  wpcli:
+    image: wordpress:cli-php8.2
+    profiles: ["cli"]
+    user: "33:33" # www-data, matches the wordpress image's file ownership
+    depends_on:
+      - db
+      - wordpress
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wp_data:/var/www/html
+      - ./:/var/www/html/wp-content/plugins/formpay-cm
+
 volumes:
   db_data:
   wp_data:
