@@ -17,21 +17,13 @@ class Settings {
 
 	const OPTION = 'formpay_cm_settings';
 	const CAP    = 'manage_options';
-	const PAGE   = 'formpay-cm';
 
+	/**
+	 * Only registers the setting; the menu/page is owned by AdminPage so all
+	 * FormPay CM settings live on one tabbed screen.
+	 */
 	public function register() {
-		add_action( 'admin_menu', array( $this, 'add_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
-	}
-
-	public function add_menu() {
-		add_options_page(
-			__( 'FormPay CM', 'formpay-cm' ),
-			__( 'FormPay CM', 'formpay-cm' ),
-			self::CAP,
-			self::PAGE,
-			array( $this, 'render' )
-		);
 	}
 
 	public function register_settings() {
@@ -51,12 +43,16 @@ class Settings {
 		return $out;
 	}
 
-	public function render() {
+	/**
+	 * Renders the Connection tab body (no page wrapper — AdminPage provides it).
+	 */
+	public function render_tab() {
 		$opts        = self::all();
 		$webhook_url = rest_url( 'formpay-cm/v1/webhook/fapshi' );
 		?>
-		<div class="wrap">
-			<h1><?php esc_html_e( 'FormPay CM — Fapshi Settings', 'formpay-cm' ); ?></h1>
+		<p class="description" style="max-width:46em;margin:1em 0;">
+			<?php esc_html_e( 'Connect FormPay CM to your Fapshi account. Use Sandbox credentials while testing, then switch to Live when you are ready to take real payments. Credentials come from your Fapshi dashboard and are stored only on your server.', 'formpay-cm' ); ?>
+		</p>
 			<form method="post" action="options.php">
 				<?php settings_fields( self::OPTION ); ?>
 				<table class="form-table" role="presentation">
@@ -91,7 +87,6 @@ class Settings {
 				</table>
 				<?php submit_button(); ?>
 			</form>
-		</div>
 		<?php
 	}
 

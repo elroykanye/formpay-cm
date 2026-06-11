@@ -7,6 +7,7 @@
 
 namespace FormPayCM;
 
+use FormPayCM\Admin\AdminPage;
 use FormPayCM\Admin\FormPayments;
 use FormPayCM\Admin\Settings;
 use FormPayCM\Forms\ElementorAdapter;
@@ -47,10 +48,13 @@ final class Plugin {
 		// Core engine — provider-agnostic; Fapshi is just the first gateway.
 		$this->payments = new PaymentManager();
 
-		// Admin settings (credentials, environment, webhook secret) + rules screen.
+		// Single tabbed admin page: Connection (credentials) + Payment Rules.
 		if ( is_admin() ) {
-			( new Settings() )->register();
-			( new FormPayments() )->register();
+			$settings      = new Settings();
+			$form_payments = new FormPayments();
+			$settings->register();        // registers the setting (admin_init)
+			$form_payments->register();   // registers save/delete handlers (admin_post)
+			( new AdminPage( $settings, $form_payments ) )->register(); // menu + tabs
 		}
 
 		// REST webhook endpoint + reconciliation backstop.
