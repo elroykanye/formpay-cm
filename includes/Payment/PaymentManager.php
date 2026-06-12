@@ -3,6 +3,10 @@
  * The provider-agnostic payment engine. Adapters call start(); the webhook
  * and cron sweep call sync_from_provider() / reconcile_pending().
  *
+ * The engine never names a specific operator: gateways come from the
+ * GatewayRegistry, the active one from settings, and in-flight transactions
+ * are always reconciled against the provider stored on the transaction.
+ *
  * @package FormPayCM
  */
 
@@ -20,12 +24,16 @@ class PaymentManager {
 	/** @var TransactionStore */
 	private $store;
 
-	/** @var GatewayInterface|null */
-	private $gateway;
+	/** @var GatewayRegistry */
+	private $registry;
 
-	public function __construct( TransactionStore $store = null, GatewayInterface $gateway = null ) {
-		$this->store   = $store ?? new TransactionStore();
-		$this->gateway = $gateway; // lazy — built from settings when first needed
+	/** @var GatewayInterface|null Optional override (mainly for tests). */
+	private $gateway_override;
+
+	public function __construct( TransactionStore $store = null, GatewayRegistry $registry = null, GatewayInterface $gateway_override = null ) {
+		$this->store            = $store ?? new TransactionStore();
+		$this->registry         = $registry ?? new GatewayRegistry();
+		$this->gateway_override = $gateway_override;
 	}
 
 	/**
@@ -36,18 +44,45 @@ class PaymentManager {
 	}
 
 	/**
-	 * @return GatewayInterface
+	 * @return GatewayRegistry
 	 */
-	public function gateway() {
-		if ( null === $this->gateway ) {
-			$this->gateway = new FapshiGateway( Settings::get_gateway_config() );
-		}
-		return $this->gateway;
+	public function registry() {
+		return $this->registry;
 	}
 
 	/**
-	 * Begin a payment from a normalised request: persist PENDING, call the
-	 * gateway, attach the provider ref. Returns the checkout link to redirect to.
+	 * The currently active gateway (the provider chosen in settings).
+	 *
+	 * @return GatewayInterface|\WP_Error
+	 */
+	public function active_gateway() {
+		return $this->gateway_for( Settings::active_provider( $this->registry ) );
+	}
+
+	/**
+	 * Build a gateway for a specific provider id, configured from settings.
+	 *
+	 * @param string $provider_id
+	 * @return GatewayInterface|\WP_Error
+	 */
+	public function gateway_for( $provider_id ) {
+		if ( $this->gateway_override && $this->gateway_override->id() === $provider_id ) {
+			return $this->gateway_override;
+		}
+		$gateway = $this->registry->make( $provider_id, Settings::provider_config( $provider_id ) );
+		if ( ! $gateway ) {
+			return new \WP_Error(
+				'formpay_cm_unknown_provider',
+				/* translators: %s provider id */
+				sprintf( __( 'Unknown payment provider: %s', 'formpay-cm' ), $provider_id )
+			);
+		}
+		return $gateway;
+	}
+
+	/**
+	 * Begin a payment from a normalised request: persist PENDING (tagged with
+	 * the active provider), call the gateway, attach the provider ref.
 	 *
 	 * @param PaymentRequest $request
 	 * @return array|\WP_Error  ['transaction' => object, 'redirect' => string]
@@ -58,8 +93,12 @@ class PaymentManager {
 			return $valid;
 		}
 
-		$gateway = $this->gateway();
-		$txn     = $this->store->create_pending( $request, $gateway->environment() );
+		$gateway = $this->active_gateway();
+		if ( is_wp_error( $gateway ) ) {
+			return $gateway;
+		}
+
+		$txn = $this->store->create_pending( $request, $gateway->id(), $gateway->environment() );
 
 		// Idempotency: if this reference was already settled, don't re-charge.
 		if ( TransactionStatus::is_terminal( $txn->status ) ) {
@@ -82,6 +121,7 @@ class PaymentManager {
 			Logger::error(
 				'Payment initiate failed',
 				array(
+					'provider'    => $gateway->id(),
 					'external_id' => $request->external_id,
 					'error'       => $result->get_error_message(),
 				)
@@ -100,7 +140,8 @@ class PaymentManager {
 	/**
 	 * Re-fetch authoritative status from the provider and apply it. Single
 	 * source of truth used by BOTH the webhook and the reconcile sweep, so a
-	 * lost webhook is always recoverable.
+	 * lost webhook is always recoverable. The gateway is chosen from the
+	 * transaction's stored provider, not the active one.
 	 *
 	 * @param string $trans_id
 	 * @return object|\WP_Error Updated transaction row.
@@ -111,7 +152,12 @@ class PaymentManager {
 			return new \WP_Error( 'formpay_cm_txn_missing', __( 'Unknown transaction.', 'formpay-cm' ) );
 		}
 
-		$status = $this->gateway()->fetch_status( $trans_id );
+		$gateway = $this->gateway_for( $txn->provider );
+		if ( is_wp_error( $gateway ) ) {
+			return $gateway;
+		}
+
+		$status = $gateway->fetch_status( $trans_id );
 		if ( is_wp_error( $status ) ) {
 			return $status;
 		}
@@ -134,8 +180,8 @@ class PaymentManager {
 	}
 
 	/**
-	 * Cron backstop: re-check every stale PENDING transaction against the
-	 * provider. Compensates for Fapshi's single-delivery webhook.
+	 * Cron backstop: re-check every stale PENDING transaction against its
+	 * provider. Compensates for single-delivery webhooks.
 	 */
 	public function reconcile_pending() {
 		$rows = $this->store->stale_pending();

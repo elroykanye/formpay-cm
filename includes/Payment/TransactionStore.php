@@ -28,10 +28,11 @@ class TransactionStore {
 	 * already exists for this reference we return it rather than duplicating.
 	 *
 	 * @param PaymentRequest $request
+	 * @param string         $provider    Provider id handling this payment.
 	 * @param string         $environment
 	 * @return object Transaction row.
 	 */
-	public function create_pending( PaymentRequest $request, $environment ) {
+	public function create_pending( PaymentRequest $request, $provider, $environment ) {
 		global $wpdb;
 
 		$existing = $this->find_by_external_id( $request->external_id );
@@ -44,7 +45,7 @@ class TransactionStore {
 			$this->table(),
 			array(
 				'external_id' => $request->external_id,
-				'provider'    => 'fapshi',
+				'provider'    => $provider,
 				'source'      => $request->source,
 				'form_id'     => (string) $request->form_id,
 				'entry_id'    => $request->entry_id,
